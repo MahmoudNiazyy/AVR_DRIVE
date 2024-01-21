@@ -1,0 +1,36 @@
+void EEPROM_WRITE_DATA(u16 word_address,u8 data,u8 slave_add)
+{
+	u8 salve_add =(word_address>>8)|slave_add;
+	I2CInit();
+	TWISendStart_condition();
+	TWISendSlaveAddressRW(salve_add,write);
+	I2C_send_byte(word_address);
+	I2C_send_byte(data);
+	I2C_StopCondition();
+
+}
+
+void EEPROM_READ_DATA(u16 word_address,u8 *data)
+{
+	u8 salve_add =(word_address>>8)|0b1010000;
+	u8 data1;
+	I2CInit();
+	TWISendStart_condition();
+	TWISendSlaveAddressRW(salve_add,write);
+	I2C_send_byte(word_address);
+	TWISendStart_condition();
+	TWISendSlaveAddressRW(salve_add,read);
+	I2C_reciveByte_ACK(&data1);
+	I2C_StopCondition();
+	*data=data1;
+}
+
+
+
+int main(void)
+{
+	u8 data,data1;
+	HCLCD_vidInit();
+
+	EEPROM_READ_DATA(400,&data1);
+	HCLCD_vidSendData(data1);
